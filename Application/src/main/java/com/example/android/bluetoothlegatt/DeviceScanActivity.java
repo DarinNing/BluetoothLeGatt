@@ -174,7 +174,7 @@ public class DeviceScanActivity extends ListActivity {
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
-        Toast.makeText(this, "You select : "+ device.getName(), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "You select : "+ device.getName(), Toast.LENGTH_SHORT).show();
         if (device == null) return;
         final Intent intent = new Intent(this, DeviceControlActivity.class);
         intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
