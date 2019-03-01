@@ -29,10 +29,16 @@ public class SampleGattAttributes {
     static {
         // Sample Services.
         attributes.put("0000180d-0000-1000-8000-00805f9b34fb", "Heart Rate Service");
+        attributes.put("00001800-0000-1000-8000-00805f9b34fb", "Service 1");
+        attributes.put("00001801-0000-1000-8000-00805f9b34fb", "Service 2");
         attributes.put("0000180a-0000-1000-8000-00805f9b34fb", "Device Information Service");
+        attributes.put("00001523-1212-efde-1523-785feabcd123", "Nordic Button Service");
         // Sample Characteristics.
         attributes.put(HEART_RATE_MEASUREMENT, "Heart Rate Measurement");
         attributes.put("00002a29-0000-1000-8000-00805f9b34fb", "Manufacturer Name String");
+        attributes.put("00001524-1212-efde-1523-785feabcd123", "Button");
+        attributes.put("00001525-1212-efde-1523-785feabcd123", "LED");
+        attributes.put("00001526-1212-efde-1523-785feabcd123", "Unknown Characteristic");
     }
 
     public static String lookup(String uuid, String defaultName) {

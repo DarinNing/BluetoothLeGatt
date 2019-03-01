@@ -298,6 +298,7 @@ public class BluetoothLeService extends Service {
 
         // This is specific to Heart Rate Measurement.
         if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
+            Log.d("TAG","setCharacteristicNotification ====> 3");
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
                     UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
