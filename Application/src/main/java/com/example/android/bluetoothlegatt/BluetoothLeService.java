@@ -66,6 +66,9 @@ public class BluetoothLeService extends Service {
     public final static UUID UUID_HEART_RATE_MEASUREMENT =
             UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
 
+    public final static UUID UUID_BUTTON_PRESS =
+            UUID.fromString(SampleGattAttributes.BUTTON_PRESS);
+
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -279,6 +282,7 @@ public class BluetoothLeService extends Service {
             Log.w(TAG, "BluetoothAdapter not initialized");
             return;
         }
+        Log.d("TAG","BluetoothAdapter is initialized");
         mBluetoothGatt.readCharacteristic(characteristic);
     }
 
@@ -297,8 +301,8 @@ public class BluetoothLeService extends Service {
         mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
 
         // This is specific to Heart Rate Measurement.
-        if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
-            Log.d("TAG","setCharacteristicNotification ====> 3");
+        if (UUID_BUTTON_PRESS.equals(characteristic.getUuid())) {
+            Log.d("TAG","UUID is ====> UUID_BUTTON_PRESS");
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
                     UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);

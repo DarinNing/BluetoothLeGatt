@@ -35,6 +35,8 @@ import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -130,7 +132,6 @@ public class DeviceControlActivity extends Activity {
                             // If there is an active notification on a characteristic, clear
                             // it first so it doesn't update the data field on the user interface.
                             if (mNotifyCharacteristic != null) {
-                                Log.d("TAG","setCharacteristicNotification() ====> 1");
                                 mBluetoothLeService.setCharacteristicNotification(
                                         mNotifyCharacteristic, false);
                                 mNotifyCharacteristic = null;
@@ -138,7 +139,6 @@ public class DeviceControlActivity extends Activity {
                             mBluetoothLeService.readCharacteristic(characteristic);
                         }
                         if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-                            Log.d("TAG","setCharacteristicNotification() ====> 2");
                             mNotifyCharacteristic = characteristic;
                             mBluetoothLeService.setCharacteristicNotification(
                                     characteristic, true);
@@ -147,7 +147,7 @@ public class DeviceControlActivity extends Activity {
                     }
                     return false;
                 }
-    };
+            };
 
     private void clearUI() {
         mGattServicesList.setAdapter((SimpleExpandableListAdapter) null);
@@ -214,7 +214,7 @@ public class DeviceControlActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
+        switch (item.getItemId()) {
             case R.id.menu_connect:
                 mBluetoothLeService.connect(mDeviceAddress);
                 return true;
@@ -237,8 +237,25 @@ public class DeviceControlActivity extends Activity {
         });
     }
 
+
     private void displayData(String data) {
+        String str, strUTF8 = "";
         if (data != null) {
+            try {
+                str = new String(data.toString().getBytes("UTF-8"));
+                strUTF8 = URLEncoder.encode(str, "UTF-8");
+                Log.d("TAG", "str = " + strUTF8);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            if (strUTF8.contains("00")) {
+                data = "Button released";
+            }else if(strUTF8.contains("4")){
+                data = "No data";
+            } else {
+                data = "Button pressed";
+            }
             mDataField.setText(data);
         }
     }
@@ -290,12 +307,12 @@ public class DeviceControlActivity extends Activity {
                 this,
                 gattServiceData,
                 android.R.layout.simple_expandable_list_item_2,
-                new String[] {LIST_NAME, LIST_UUID},
-                new int[] { android.R.id.text1, android.R.id.text2 },
+                new String[]{LIST_NAME, LIST_UUID},
+                new int[]{android.R.id.text1, android.R.id.text2},
                 gattCharacteristicData,
                 android.R.layout.simple_expandable_list_item_2,
-                new String[] {LIST_NAME, LIST_UUID},
-                new int[] { android.R.id.text1, android.R.id.text2 }
+                new String[]{LIST_NAME, LIST_UUID},
+                new int[]{android.R.id.text1, android.R.id.text2}
         );
         mGattServicesList.setAdapter(gattServiceAdapter);
     }
