@@ -228,6 +228,7 @@ public class DeviceControlActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    //更新UI
     private void updateConnectionState(final int resourceId) {
         runOnUiThread(new Runnable() {
             @Override
