@@ -239,7 +239,7 @@ public class DeviceControlActivity extends Activity {
     }
 
 
-    private void displayData(String data) {
+/*    private void displayData(String data) {
         String str, strUTF8 = "";
         if (data != null) {
             try {
@@ -257,6 +257,12 @@ public class DeviceControlActivity extends Activity {
             } else {
                 data = "Button pressed";
             }
+            mDataField.setText(data);
+        }
+    }*/
+
+    private void displayData(String data) {
+        if (data != null) {
             mDataField.setText(data);
         }
     }
