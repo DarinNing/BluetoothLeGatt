@@ -110,6 +110,7 @@ public class DeviceControlActivity extends Activity {
                 // Show all the supported services and characteristics on the user interface.
                 displayGattServices(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                Log.d(TAG,"获取数据");
                 displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
             }
         }
@@ -128,6 +129,8 @@ public class DeviceControlActivity extends Activity {
                         final BluetoothGattCharacteristic characteristic =
                                 mGattCharacteristics.get(groupPosition).get(childPosition);
                         final int charaProp = characteristic.getProperties();
+
+                        //目前这段代码还不清楚逻辑
                         if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
                             // If there is an active notification on a characteristic, clear
                             // it first so it doesn't update the data field on the user interface.
@@ -138,6 +141,7 @@ public class DeviceControlActivity extends Activity {
                             }
                             mBluetoothLeService.readCharacteristic(characteristic);
                         }
+
                         if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
                             mNotifyCharacteristic = characteristic;
                             mBluetoothLeService.setCharacteristicNotification(
@@ -237,29 +241,6 @@ public class DeviceControlActivity extends Activity {
             }
         });
     }
-
-
-/*    private void displayData(String data) {
-        String str, strUTF8 = "";
-        if (data != null) {
-            try {
-                str = new String(data.toString().getBytes("UTF-8"));
-                strUTF8 = URLEncoder.encode(str, "UTF-8");
-                Log.d("TAG", "str = " + strUTF8);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-
-            if (strUTF8.contains("00")) {
-                data = "Button released";
-            }else if(strUTF8.contains("4")){
-                data = "No data";
-            } else {
-                data = "Button pressed";
-            }
-            mDataField.setText(data);
-        }
-    }*/
 
     private void displayData(String data) {
         if (data != null) {
