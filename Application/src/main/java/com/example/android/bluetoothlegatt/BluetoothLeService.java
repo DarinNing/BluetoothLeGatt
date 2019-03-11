@@ -31,7 +31,10 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.SimpleExpandableListAdapter;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,6 +49,7 @@ public class BluetoothLeService extends Service {
     private BluetoothAdapter mBluetoothAdapter;
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
+    private BluetoothLeService mBluetoothLeService;
     private int mConnectionState = STATE_DISCONNECTED;
 
     private static final int STATE_DISCONNECTED = 0;
@@ -68,6 +72,12 @@ public class BluetoothLeService extends Service {
 
     public final static UUID UUID_BUTTON_PRESS =
             UUID.fromString(SampleGattAttributes.BUTTON_PRESS);
+
+    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
+            new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+    private final String LIST_NAME = "NAME";
+    private final String LIST_UUID = "UUID";
+    BluetoothGattCharacteristic mLEDWriteCharacteristic = null;
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -96,6 +106,8 @@ public class BluetoothLeService extends Service {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+
+                getServicesList();
             } else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
             }
@@ -116,6 +128,53 @@ public class BluetoothLeService extends Service {
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
     };
+
+    void getServicesList() {
+        List<BluetoothGattService> gattServices = getSupportedGattServices();
+            if (gattServices == null) return;
+            String uuid = null;
+            String unknownServiceString = getResources().getString(R.string.unknown_service);
+            String unknownCharaString = getResources().getString(R.string.unknown_characteristic);
+            ArrayList<HashMap<String, String>> gattServiceData = new ArrayList<HashMap<String, String>>();
+            ArrayList<ArrayList<HashMap<String, String>>> gattCharacteristicData
+                    = new ArrayList<ArrayList<HashMap<String, String>>>();
+            mGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+
+            // Loops through available GATT Services.
+            for (BluetoothGattService gattService : gattServices) {
+                HashMap<String, String> currentServiceData = new HashMap<String, String>();
+                uuid = gattService.getUuid().toString();
+                currentServiceData.put(
+                        LIST_NAME, SampleGattAttributes.lookup(uuid, unknownServiceString));
+                currentServiceData.put(LIST_UUID, uuid);
+                gattServiceData.add(currentServiceData);
+
+                ArrayList<HashMap<String, String>> gattCharacteristicGroupData =
+                        new ArrayList<HashMap<String, String>>();
+                List<BluetoothGattCharacteristic> gattCharacteristics =
+                        gattService.getCharacteristics();
+                ArrayList<BluetoothGattCharacteristic> charas =
+                        new ArrayList<BluetoothGattCharacteristic>();
+
+                // Loops through available Characteristics.
+                for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+                    charas.add(gattCharacteristic);
+                    HashMap<String, String> currentCharaData = new HashMap<String, String>();
+                    uuid = gattCharacteristic.getUuid().toString();
+                    currentCharaData.put(
+                            LIST_NAME, SampleGattAttributes.lookup(uuid, unknownCharaString));
+                    currentCharaData.put(LIST_UUID, uuid);
+                    gattCharacteristicGroupData.add(currentCharaData);
+                    if ("00001525-1212-efde-1523-785feabcd123".equals(uuid) ) {
+                        Log.d(TAG, "getServicesList: find led uuid");
+                        mLEDWriteCharacteristic = gattCharacteristic;
+                    }
+                }
+                mGattCharacteristics.add(charas);
+                gattCharacteristicData.add(gattCharacteristicGroupData);
+            }
+
+    }
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
@@ -150,7 +209,27 @@ public class BluetoothLeService extends Service {
                 final StringBuilder stringBuilder = new StringBuilder(data.length);
                 for(byte byteChar : data)
                     stringBuilder.append(String.format("%02X ", byteChar));
-                intent.putExtra(EXTRA_DATA, new String(data) + " +++++ " + stringBuilder.toString());
+                intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
+            }
+
+            int value = 0;
+
+            if (characteristic.getValue().length != 1) {
+                Log.d(TAG,  "Invalid value: !!!!!");
+            } else {
+                switch(characteristic.getIntValue(17, 0)) {
+
+                    case 0:
+                        Log.d(TAG, "case 0");
+                        mLEDWriteCharacteristic.setValue(1,17,0);
+                        writeCharacteristic(mLEDWriteCharacteristic);
+                    case 1:
+                        Log.d(TAG, "case 1");
+                        mLEDWriteCharacteristic.setValue(0,17,0);
+                        writeCharacteristic(mLEDWriteCharacteristic);
+                    default:
+                        Log.d(TAG,  "Invalid value");
+                }
             }
         }
         sendBroadcast(intent);
@@ -285,6 +364,17 @@ public class BluetoothLeService extends Service {
         }
         Log.d("TAG","BluetoothAdapter is initialized");
         mBluetoothGatt.readCharacteristic(characteristic);
+    }
+
+    public void writeCharacteristic(BluetoothGattCharacteristic characteristic) {
+        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+            Log.d(TAG, "BluetoothAdapter not initialized");
+            return;
+        }
+        Log.d(TAG, "BluetoothAdapter 写入数据");
+        boolean isBoolean = false;
+        isBoolean = mBluetoothGatt.writeCharacteristic(characteristic);
+        Log.d(TAG, "BluetoothAdapter_writeCharacteristic = " +isBoolean);  //如果isBoolean返回的是true则写入成功
     }
 
     /**

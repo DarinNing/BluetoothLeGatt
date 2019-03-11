@@ -128,10 +128,10 @@ public class DeviceControlActivity extends Activity {
                     if (mGattCharacteristics != null) {
                         final BluetoothGattCharacteristic characteristic =
                                 mGattCharacteristics.get(groupPosition).get(childPosition);
-                        final int charaProp = characteristic.getProperties();
+                        final int charaProp = characteristic.getProperties();   //如果该字符可写
 
-                        //目前这段代码还不清楚逻辑
                         if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
+                            //如果有关于特征的活动通知，请清除它首先，所以它不会更新用户界面上的数据字段。
                             // If there is an active notification on a characteristic, clear
                             // it first so it doesn't update the data field on the user interface.
                             if (mNotifyCharacteristic != null) {
@@ -139,6 +139,7 @@ public class DeviceControlActivity extends Activity {
                                         mNotifyCharacteristic, false);
                                 mNotifyCharacteristic = null;
                             }
+                            //读取数据，数据将在回调函数中
                             mBluetoothLeService.readCharacteristic(characteristic);
                         }
 
