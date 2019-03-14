@@ -39,6 +39,7 @@ public class SampleGattAttributes {
         attributes.put("00002a29-0000-1000-8000-00805f9b34fb", "Manufacturer Name String");
         attributes.put(BUTTON_PRESS, "Button");
         attributes.put("00001525-1212-efde-1523-785feabcd123", "LED");
+        attributes.put("0000180f-0000-1000-8000-00805f9b34fb", "Battery");
         attributes.put("00001526-1212-efde-1523-785feabcd123", "Unknown Characteristic");
     }
 
