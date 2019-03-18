@@ -30,6 +30,7 @@ import android.os.Bundle;
 import android.os.Handler;
 //import android.support.v4.app.ActivityCompat;
 //import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,6 +47,7 @@ import java.util.ArrayList;
  * Activity for scanning and displaying available Bluetooth LE devices.
  */
 public class DeviceScanActivity extends ListActivity {
+    private static final String TAG = "DeviceScanActivity";
     private LeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
@@ -265,7 +267,12 @@ public class DeviceScanActivity extends ListActivity {
 
             final String deviceName = "设备名：" + device.getName();
             final String deviceAddr = "Mac地址：" + device.getAddress();
-            final String broadcastPack ="广播包：" + bytesToHex(scanRecord).substring(19,33);//此处调用了格式转换方法bytesToHex()将十六进制序列转String
+            final String broadcastPack ="Broadcast：" + bytesToHex(scanRecord);//此处调用了格式转换方法bytesToHex()将十六进制序列转String
+            int mMarkButton = bytesToHex(scanRecord).indexOf("2019");
+
+            Log.d(TAG,"mMarkButton = " + mMarkButton + "    Broadcast： " + broadcastPack);
+            //final String broadcastPack ="广播包：" + bytesToHex(scanRecord).substring(18,32);
+
             final String rssiString = "RSSI:" + String.valueOf(rssi) + "dB";//此处调用了String的格式转换方法valueOf()将数值类型转String
 
             //显示数据
@@ -275,7 +282,16 @@ public class DeviceScanActivity extends ListActivity {
                 viewHolder.deviceName.setText(R.string.unknown_device);
             viewHolder.deviceAddress.setText(device.getAddress());
 
-            viewHolder.deviceBroadcastPack.setText(broadcastPack);//显示广播包
+
+            if(mMarkButton != -1){
+                Log.d(TAG,"deviceName = " + deviceName);
+                if(deviceName.equals("设备名：NautoMBv2")){
+                    viewHolder.deviceBroadcastPack.setText("SN：" + bytesToHex(scanRecord).substring(mMarkButton+4,mMarkButton+14));
+                }
+            }else {
+                viewHolder.deviceBroadcastPack.setText(broadcastPack);//显示广播包
+            }
+
 
             viewHolder.deviceRssi.setText(rssiString);//显示RSSI
 
