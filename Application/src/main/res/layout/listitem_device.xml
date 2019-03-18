@@ -25,4 +25,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="12dp"/>
+    <TextView android:id="@+id/device_broadcastPack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12dp"/>
+    <TextView android:id="@+id/device_rssi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12dp"/>
 </LinearLayout>

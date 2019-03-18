@@ -161,7 +161,7 @@ public class DeviceScanActivity extends ListActivity {
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
-        //Toast.makeText(this, "You select : "+ device.getName(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "You select : "+ device.getName(), Toast.LENGTH_SHORT).show();
         if (device == null) return;
         final Intent intent = new Intent(this, DeviceControlActivity.class);
         intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
@@ -198,16 +198,22 @@ public class DeviceScanActivity extends ListActivity {
     private class LeDeviceListAdapter extends BaseAdapter {
         private ArrayList<BluetoothDevice> mLeDevices;
         private LayoutInflater mInflator;
+        private ArrayList<Integer> mRSSIs;//新加
+        private ArrayList<byte[]> mRecords;//新加
 
         public LeDeviceListAdapter() {
             super();
             mLeDevices = new ArrayList<BluetoothDevice>();
             mInflator = DeviceScanActivity.this.getLayoutInflater();
+            mRSSIs = new ArrayList<Integer>();//新加
+            mRecords = new ArrayList<byte[]>();//新加
         }
 
-        public void addDevice(BluetoothDevice device) {
+        public void addDevice(BluetoothDevice device,int rssi,byte[] scanRecord) {
             if(!mLeDevices.contains(device)) {
                 mLeDevices.add(device);
+                mRSSIs.add(rssi);//新加
+                mRecords.add(scanRecord);//新加
             }
         }
 
@@ -243,21 +249,49 @@ public class DeviceScanActivity extends ListActivity {
                 viewHolder = new ViewHolder();
                 viewHolder.deviceAddress = (TextView) view.findViewById(R.id.device_address);
                 viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);
+                viewHolder.deviceBroadcastPack = (TextView) view.findViewById(R.id.device_broadcastPack);
+                viewHolder.deviceRssi = (TextView) view.findViewById(R.id.device_rssi);
                 view.setTag(viewHolder);
             } else {
                 viewHolder = (ViewHolder) view.getTag();
             }
 
             BluetoothDevice device = mLeDevices.get(i);
-            final String deviceName = device.getName();
+            int rssi = mRSSIs.get(i);
+            byte[] scanRecord = mRecords.get(i);
+
+            //提取信息
+            //final String deviceName = device.getName();
+
+            final String deviceName = "设备名：" + device.getName();
+            final String deviceAddr = "Mac地址：" + device.getAddress();
+            final String broadcastPack ="广播包：" + bytesToHex(scanRecord).substring(19,33);//此处调用了格式转换方法bytesToHex()将十六进制序列转String
+            final String rssiString = "RSSI:" + String.valueOf(rssi) + "dB";//此处调用了String的格式转换方法valueOf()将数值类型转String
+
+            //显示数据
             if (deviceName != null && deviceName.length() > 0)
                 viewHolder.deviceName.setText(deviceName);
             else
                 viewHolder.deviceName.setText(R.string.unknown_device);
             viewHolder.deviceAddress.setText(device.getAddress());
 
+            viewHolder.deviceBroadcastPack.setText(broadcastPack);//显示广播包
+
+            viewHolder.deviceRssi.setText(rssiString);//显示RSSI
+
             return view;
         }
+    }
+
+    static final char[] hexArray = "0123456789ABCDEF".toCharArray();
+    private static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
     // Device scan callback.
@@ -265,11 +299,11 @@ public class DeviceScanActivity extends ListActivity {
             new BluetoothAdapter.LeScanCallback() {
 
         @Override
-        public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+        public void onLeScan(final BluetoothDevice device,final int rssi,final byte[] scanRecord) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mLeDeviceListAdapter.addDevice(device);
+                    mLeDeviceListAdapter.addDevice(device,rssi,scanRecord);
                     mLeDeviceListAdapter.notifyDataSetChanged();
                 }
             });
@@ -279,5 +313,7 @@ public class DeviceScanActivity extends ListActivity {
     static class ViewHolder {
         TextView deviceName;
         TextView deviceAddress;
+        TextView deviceBroadcastPack;//加入广播包数据
+        TextView deviceRssi;//加入RSSI
     }
 }
