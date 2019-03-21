@@ -265,12 +265,16 @@ public class DeviceScanActivity extends ListActivity {
             //提取信息
             //final String deviceName = device.getName();
 
-            final String deviceName = "设备名：" + device.getName();
-            final String deviceAddr = "Mac地址：" + device.getAddress();
-            final String broadcastPack ="Broadcast：" + bytesToHex(scanRecord);//此处调用了格式转换方法bytesToHex()将十六进制序列转String
-            int mMarkButton = bytesToHex(scanRecord).indexOf("2019");
+            final String deviceName = device.getName();
+            final String deviceAddr = device.getAddress();
+            //final String broadcastPack ="Broadcast：" + bytesToHex(scanRecord);//此处调用了格式转换方法bytesToHex()将十六进制序列转String
+            //final String broadcastPack = hexStr2Str(bytesToHex(scanRecord)).substring(4,19);
+            final String broadcastPack = bytesToString(scanRecord).substring(4,19);
+            //final String sn = hexStr2Str(broadcastPack);
+            //int mMarkButton = bytesToHex(scanRecord).indexOf("2019");
 
-            Log.d(TAG,"mMarkButton = " + mMarkButton + "    Broadcast： " + broadcastPack);
+
+            //Log.d(TAG,"mMarkButton = " + mMarkButton + "    Broadcast： " + broadcastPack);
             //final String broadcastPack ="广播包：" + bytesToHex(scanRecord).substring(18,32);
 
             final String rssiString = "RSSI:" + String.valueOf(rssi) + "dB";//此处调用了String的格式转换方法valueOf()将数值类型转String
@@ -283,20 +287,28 @@ public class DeviceScanActivity extends ListActivity {
             viewHolder.deviceAddress.setText(device.getAddress());
 
 
-            if(mMarkButton != -1){
-                Log.d(TAG,"deviceName = " + deviceName);
-                if(deviceName.equals("设备名：NautoMBv2")){
-                    viewHolder.deviceBroadcastPack.setText("SN：" + bytesToHex(scanRecord).substring(mMarkButton+4,mMarkButton+14));
-                }
-            }else {
-                viewHolder.deviceBroadcastPack.setText(broadcastPack);//显示广播包
-            }
 
+                Log.d(TAG,"deviceName = " + deviceName + " broadcastPack = " + broadcastPack);
+                //if(deviceName.equals("设备名：NautoMBv2 ")){
+                    //viewHolder.deviceBroadcastPack.setText("SN：" + bytesToHex(scanRecord).substring(8,38));
+            viewHolder.deviceBroadcastPack.setText("SN：" + broadcastPack);
+                //}else{
+                //    viewHolder.deviceBroadcastPack.setText("设备名：" + broadcastPack);//显示广播包
+                //}
 
             viewHolder.deviceRssi.setText(rssiString);//显示RSSI
 
             return view;
         }
+    }
+
+    public static String bytesToString(byte[] b) {
+        StringBuffer result = new StringBuffer("");
+        int length = b.length;
+        for (int i=0; i<length; i++) {
+            result.append((char)(b[i]));
+        }
+        return result.toString();
     }
 
     static final char[] hexArray = "0123456789ABCDEF".toCharArray();
@@ -308,6 +320,19 @@ public class DeviceScanActivity extends ListActivity {
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    public static String hexStr2Str(String hexStr) {
+        String str = "0123456789ABCDEF";
+        char[] hexs = hexStr.toCharArray();
+        byte[] bytes = new byte[hexStr.length() / 2];
+        int n;
+        for (int i = 0; i < bytes.length; i++) {
+            n = str.indexOf(hexs[2 * i]) * 16;
+            n += str.indexOf(hexs[2 * i + 1]);
+            bytes[i] = (byte) (n & 0xff);
+        }
+        return new String(bytes);
     }
 
     // Device scan callback.
