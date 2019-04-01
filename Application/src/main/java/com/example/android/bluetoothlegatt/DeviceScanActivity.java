@@ -267,15 +267,8 @@ public class DeviceScanActivity extends ListActivity {
 
             final String deviceName = device.getName();
             final String deviceAddr = device.getAddress();
-            //final String broadcastPack ="Broadcast：" + bytesToHex(scanRecord);//此处调用了格式转换方法bytesToHex()将十六进制序列转String
-            //final String broadcastPack = hexStr2Str(bytesToHex(scanRecord)).substring(4,19);
+            //final String broadcastPack = device.getSn();
             final String broadcastPack = bytesToString(scanRecord).substring(4,19);
-            //final String sn = hexStr2Str(broadcastPack);
-            //int mMarkButton = bytesToHex(scanRecord).indexOf("2019");
-
-
-            //Log.d(TAG,"mMarkButton = " + mMarkButton + "    Broadcast： " + broadcastPack);
-            //final String broadcastPack ="广播包：" + bytesToHex(scanRecord).substring(18,32);
 
             final String rssiString = "RSSI:" + String.valueOf(rssi) + "dB";//此处调用了String的格式转换方法valueOf()将数值类型转String
 
