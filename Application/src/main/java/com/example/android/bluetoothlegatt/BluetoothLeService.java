@@ -130,6 +130,7 @@ public class BluetoothLeService extends Service {
     };
 
     void getServicesList() {
+        Log.d(TAG,"getServicesList()");
         List<BluetoothGattService> gattServices = getSupportedGattServices();
             if (gattServices == null) return;
             String uuid = null;
@@ -165,6 +166,7 @@ public class BluetoothLeService extends Service {
                             LIST_NAME, SampleGattAttributes.lookup(uuid, unknownCharaString));
                     currentCharaData.put(LIST_UUID, uuid);
                     gattCharacteristicGroupData.add(currentCharaData);
+
                     if ("00001525-1212-efde-1523-785feabcd123".equals(uuid) ) {
                         Log.d(TAG, "getServicesList: find led uuid");
                         mLEDWriteCharacteristic = gattCharacteristic;

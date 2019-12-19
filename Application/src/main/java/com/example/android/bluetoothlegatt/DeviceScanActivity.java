@@ -25,11 +25,13 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 //import android.support.v4.app.ActivityCompat;
 //import android.support.v4.content.ContextCompat;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -54,10 +56,11 @@ public class DeviceScanActivity extends ListActivity {
     private Handler mHandler;
 
     private static final int REQUEST_ENABLE_BT = 1;
-    // Stops scanning after 10 seconds.
+    // Stops scanning after 3 seconds.
     private static final long SCAN_PERIOD = 3000;
 
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 0523;
+    private static final int REQUEST_CODE_LOCATION_SETTINGS = 2;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -74,7 +77,6 @@ public class DeviceScanActivity extends ListActivity {
 
         //添加动态权限
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // Android M Permission check
             if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
             }
@@ -164,8 +166,10 @@ public class DeviceScanActivity extends ListActivity {
     protected void onListItemClick(ListView l, View v, int position, long id) {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
         Toast.makeText(this, "You select : "+ device.getName(), Toast.LENGTH_SHORT).show();
+
         if (device == null) return;
         final Intent intent = new Intent(this, DeviceControlActivity.class);
+
         intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
         intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
         if (mScanning) {
@@ -263,28 +267,24 @@ public class DeviceScanActivity extends ListActivity {
             byte[] scanRecord = mRecords.get(i);
 
             //提取信息
-            //final String deviceName = device.getName();
 
             final String deviceName = device.getName();
             final String deviceAddr = device.getAddress();
-            //final String broadcastPack = device.getSn();
-            final String broadcastPack = bytesToString(scanRecord).substring(4,19);
+            final String broadcastPack = bytesToString(scanRecord).substring(44,58);
+            final String rssiString = "RSSI:" + String.valueOf(rssi) + "dB";                        //valueOf()将数值类型转String
 
-            final String rssiString = "RSSI:" + String.valueOf(rssi) + "dB";//此处调用了String的格式转换方法valueOf()将数值类型转String
-
-            //显示数据
+            //display data
             if (deviceName != null && deviceName.length() > 0)
                 viewHolder.deviceName.setText(deviceName);
             else
                 viewHolder.deviceName.setText(R.string.unknown_device);
-            viewHolder.deviceAddress.setText(device.getAddress());
+            viewHolder.deviceAddress.setText(deviceAddr);
 
 
 
                 Log.d(TAG,"deviceName = " + deviceName + " broadcastPack = " + broadcastPack);
                 //if(deviceName.equals("设备名：NautoMBv2 ")){
-                    //viewHolder.deviceBroadcastPack.setText("SN：" + bytesToHex(scanRecord).substring(8,38));
-            viewHolder.deviceBroadcastPack.setText("SN：" + broadcastPack);
+            viewHolder.deviceBroadcastPack.setText("Broadcast：" + broadcastPack);
                 //}else{
                 //    viewHolder.deviceBroadcastPack.setText("设备名：" + broadcastPack);//显示广播包
                 //}
@@ -350,4 +350,5 @@ public class DeviceScanActivity extends ListActivity {
         TextView deviceBroadcastPack;//加入广播包数据
         TextView deviceRssi;//加入RSSI
     }
+
 }
